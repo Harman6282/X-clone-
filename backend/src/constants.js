@@ -1,1 +1,1 @@
-export const DB_NAME = "XClone"
+export const DB_NAME = "xClone"
