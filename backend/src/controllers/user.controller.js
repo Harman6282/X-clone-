@@ -10,6 +10,8 @@ import {
   deleteFromCloudinary,
   uploadOnCloudinary,
 } from "../utils/cloudinary.js";
+import mongoose from "mongoose";
+import { Follow } from "../models/follow.model.js";
 
 function isValidEmail(email) {
   return validator.isEmail(email);
@@ -116,6 +118,9 @@ const logoutUser = asyncHandler(async (req, res) => {
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
+  if (!req.user) {
+    throw new apiError(401, "User not authenticated");
+  }
   return res
     .status(200)
     .json(new apiResponse(200, req.user, "current user fetched successfully"));
@@ -220,6 +225,117 @@ const updateCoverImage = asyncHandler(async (req, res) => {
     .status(200)
     .json(new apiResponse(200, user, "Cover image updated successfully"));
 });
+
+const getUserProfile = asyncHandler(async (req, res) => {
+  const userId = new mongoose.Types.ObjectId(req.params.id);
+
+  const user = await User.findById(userId); // check the user existence
+  if (!user) {
+    throw new apiError(404, "User not found");
+  }
+
+  const userProfile = await User.aggregate([
+    {
+      // here $match is getting the user from the  database collection
+      $match: {
+        _id: userId,
+      },
+    },
+    {
+      //  deselecting the fields which does't have to return
+      $project: {
+        password: 0,
+        avatar_public_id: 0,
+        coverImage_public_id: 0,
+      },
+    },
+    {
+      // here finding the documents from the follows db collection in which the following field's id is userProfile id and naming it as followers
+      $lookup: {
+        from: "follows",
+        localField: "_id",
+        foreignField: "following",
+        as: "followers",
+      },
+    },
+    {
+      // here finding the documents from the follows db collection in which the following field's id is userProfile id and naming it as followers
+      $lookup: {
+        from: "follows",
+        localField: "_id",
+        foreignField: "following",
+        as: "followers",
+      },
+    },
+    {
+      // here finding the documents from the follows db collection in which the follower id is userProfile id and naming it as following
+      $lookup: {
+        from: "follows",
+        localField: "_id",
+        foreignField: "follower",
+        as: "following",
+      },
+    },
+    {
+      // here adding and mapping the followers to the user Profile which are going to be return
+      $addFields: {
+        followers: {
+          $map: {
+            input: "$followers",
+            as: "follower",
+            in: "$$follower.follower", // extract only the follower ID
+          },
+        },
+        following: {
+          $map: {
+            input: "$following",
+            as: "follower",
+            in: "$$follower.following", // extract only the follwing ID
+          },
+        },
+      },
+    },
+    {
+      // here populating the followers data
+      $lookup: {
+        from: "users",
+        localField: "followers",
+        foreignField: "_id",
+        as: "followers",
+      },
+    },
+    {
+      // here populating the following user data
+      $lookup: {
+        from: "users",
+        localField: "following",
+        foreignField: "_id",
+        as: "following",
+      },
+    },
+    {
+      // selecting the fields which are needed
+      $project: {
+        "followers.name": 1,
+        "followers.avatar": 1,
+        "followers.username": 1,
+        "followers.bio": 1,
+
+        "following.name": 1,
+        "following.avatar": 1,
+        "following.username": 1,
+        "following.bio": 1,
+      },
+    },
+  ]);
+
+  console.log(userProfile);
+  return res
+    .status(200)
+    .json(
+      new apiResponse(200, userProfile, "User profile fetched successfully")
+    );
+});
 export {
   registerUser,
   signinUser,
@@ -228,6 +344,5 @@ export {
   getCurrentUser,
   updateAvatar,
   updateCoverImage,
-  followUser,
-  unfollowUser,
+  getUserProfile,
 };
