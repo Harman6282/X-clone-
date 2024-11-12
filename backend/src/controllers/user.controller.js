@@ -316,11 +316,18 @@ const getUserProfile = asyncHandler(async (req, res) => {
     {
       // selecting the fields which are needed
       $project: {
+        "name": 1,
+        "bio": 1,
+        "username": 1,
+        "email": 1,
+        "avatar": 1,
+        "createdAt": 1,
+        "updatedAt": 1,
+        "coverImage": 1,
         "followers.name": 1,
         "followers.avatar": 1,
         "followers.username": 1,
         "followers.bio": 1,
-
         "following.name": 1,
         "following.avatar": 1,
         "following.username": 1,
