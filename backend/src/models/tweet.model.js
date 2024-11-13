@@ -12,11 +12,12 @@ const tweetSchema = new Schema(
       type: String,
     },
     media_publicId: {
-      type: String
+      type: String,
     },
     owner: {
       type: mongoose.Types.ObjectId,
       ref: "User",
+      required: true
     },
     likes: [
       {

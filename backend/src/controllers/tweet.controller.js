@@ -1,17 +1,13 @@
+import mongoose from "mongoose";
 import { Tweet } from "../models/tweet.model.js";
 import { User } from "../models/user.model.js";
 import { apiError } from "../utils/apiError.js";
 import { apiResponse } from "../utils/apiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { uploadOnCloudinary } from "../utils/cloudinary.js";
-
-// post tweet
-// update tweet
-// delete tweet
-// get all tweet
-// get tweet by id
-// like/unlike tweet
-// get followig users tweets
+import {
+  deleteFromCloudinary,
+  uploadOnCloudinary,
+} from "../utils/cloudinary.js";
 
 const postTweet = asyncHandler(async (req, res) => {
   const userId = req.user?._id;
@@ -53,11 +49,103 @@ const postTweet = asyncHandler(async (req, res) => {
     .json(new apiResponse(200, post, "Post created successfully"));
 });
 
-const updateTweet = asyncHandler(async (req, res) => {});
-const deleteTweet = asyncHandler(async (req, res) => {});
-const getAllTweets = asyncHandler(async (req, res) => {});
-const getTweetById = asyncHandler(async (req, res) => {});
-const toggleTweetLike = asyncHandler(async (req, res) => {});
+const updateTweet = asyncHandler(async (req, res) => {
+  const { tweetId } = req.params;
+  const { content } = req.body;
+
+  if (!content) {
+    throw new apiError(400, "Please provide content to be updated");
+  }
+
+  const updatedTweet = await Tweet.findByIdAndUpdate(
+    tweetId,
+    {
+      content: content,
+    },
+    { new: true }
+  );
+
+  if (!updatedTweet) {
+    throw new apiError(500, "Error while updating the post");
+  }
+
+  return res
+    .status(200)
+    .json(new apiResponse(200, updatedTweet, "Tweet updated successfully"));
+});
+
+const deleteTweet = asyncHandler(async (req, res) => {
+  const userId = req.user?._id;
+  const tweetId = new mongoose.Types.ObjectId(req.params.tweetId);
+  const tweet = await Tweet.findById(tweetId);
+
+  if (!tweet) {
+    throw new apiError(404, "Tweet not found");
+  }
+
+  if (userId.toString() !== tweet.owner.toString()) {
+    throw new apiError(400, "You are not authorized for this action");
+  }
+  await deleteFromCloudinary(tweet.media_publicId);
+  const deletedTweet = await Tweet.findByIdAndDelete(tweetId);
+
+  return res
+    .status(200)
+    .json(
+      new apiResponse(
+        200,
+        { deletedTweet: deletedTweet },
+        "Tweet deleted successfully"
+      )
+    );
+});
+const getAllTweets = asyncHandler(async (req, res) => {
+  const allTweets = await Tweet.find();
+
+  return res
+    .status(200)
+    .json(new apiResponse(200, allTweets, "All tweets fetched successfylly"));
+});
+const getTweetById = asyncHandler(async (req, res) => {
+  const { tweetId } = req.params;
+
+  const tweet = await Tweet.findById(tweetId);
+  if (!tweet) {
+    throw new apiError(404, "Tweet not found");
+  }
+
+  return res
+    .status(200)
+    .json(new apiResponse(200, tweet, "Tweet fetched successfully"));
+});
+const toggleTweetLike = asyncHandler(async (req, res) => {
+  const { tweetId } = req.params;
+  const userId = req.user?._id;
+
+  const tweet = await Tweet.findById(tweetId);
+  if (!tweet) {
+    throw new apiError(404, "Tweet not found");
+  }
+
+  // Check if the user has already liked the tweet
+  const hasLiked = tweet.likes.includes(userId);
+
+  // toggling the like and unlike tweet
+
+  if (hasLiked) {
+    await tweet.updateOne({ $pull: { likes: userId } });
+    return res
+      .status(200)
+      .json(new apiResponse(200, null, "Tweet unliked successfully"));
+  } else {
+    await tweet.updateOne({ $push: { likes: userId } });
+    return res
+      .status(200)
+      .json(new apiResponse(200, null, "Tweet liked successfully"));
+  }
+});
+
+const getFollowingUsersTweets = asyncHandler(async (req, res) => {});
 
 export {
   postTweet,
@@ -66,4 +154,5 @@ export {
   getAllTweets,
   getTweetById,
   toggleTweetLike,
+  getFollowingUsersTweets
 };
