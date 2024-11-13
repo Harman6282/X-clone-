@@ -24,11 +24,14 @@ app.use(cookieParser());
 import userRouter from "./routes/user.routes.js"
 import followRouter from "./routes/follow.routes.js"
 import tweetRouter from "./routes/tweet.routes.js"
+import commentRouter from "./routes/comment.routes.js"
 
 
 app.use("/api/v1/users" , userRouter)
 app.use("/api/v1/f" , followRouter)
 app.use("/api/v1/tweet" , tweetRouter)
+app.use("/api/v1/comment" , commentRouter)
+
 
 
 export { app };

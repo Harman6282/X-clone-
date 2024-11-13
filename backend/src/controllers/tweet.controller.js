@@ -8,6 +8,7 @@ import {
   deleteFromCloudinary,
   uploadOnCloudinary,
 } from "../utils/cloudinary.js";
+import { Comment } from "../models/comment.model.js";
 
 const postTweet = asyncHandler(async (req, res) => {
   const userId = req.user?._id;
@@ -49,7 +50,7 @@ const postTweet = asyncHandler(async (req, res) => {
     .json(new apiResponse(200, post, "Post created successfully"));
 });
 
-const updateTweet = asyncHandler(async (req, res) => {
+const editTweet = asyncHandler(async (req, res) => {
   const { tweetId } = req.params;
   const { content } = req.body;
 
@@ -109,14 +110,46 @@ const getAllTweets = asyncHandler(async (req, res) => {
 const getTweetById = asyncHandler(async (req, res) => {
   const { tweetId } = req.params;
 
-  const tweet = await Tweet.findById(tweetId);
-  if (!tweet) {
+  const currtweet = await Tweet.findById(tweetId);
+  if (!currtweet) {
     throw new apiError(404, "Tweet not found");
   }
 
+  const tweet = await Tweet.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(tweetId),
+      },
+    },
+    {
+      $lookup: {
+        from: "comments",
+        localField: "_id",
+        foreignField: "tweet",
+        as: "comments",
+      },
+    },
+    {
+      $project: {
+        content: 1,
+        media: 1,
+        owner: 1,
+        likes: 1,
+        createdAt: 1,
+        comments: {
+          content: 1,
+          owner: 1,
+          createdAt: 1,
+        },
+      },
+    },
+  ]);
+
+  console.log(tweet[0].comments);
+
   return res
     .status(200)
-    .json(new apiResponse(200, tweet, "Tweet fetched successfully"));
+    .json(new apiResponse(200, tweet[0], "Tweet fetched successfully"));
 });
 const toggleTweetLike = asyncHandler(async (req, res) => {
   const { tweetId } = req.params;
@@ -149,10 +182,10 @@ const getFollowingUsersTweets = asyncHandler(async (req, res) => {});
 
 export {
   postTweet,
-  updateTweet,
+  editTweet,
   deleteTweet,
   getAllTweets,
   getTweetById,
   toggleTweetLike,
-  getFollowingUsersTweets
+  getFollowingUsersTweets,
 };
