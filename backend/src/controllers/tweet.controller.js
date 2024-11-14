@@ -130,20 +130,53 @@ const getTweetById = asyncHandler(async (req, res) => {
       },
     },
     {
+      $unwind: "$comments",       
+    },
+    {
+      $lookup: {
+        from: "users",               
+        localField: "comments.owner",
+        foreignField: "_id",         
+        as: "comments.ownerDetails",
+      },
+    },
+    {
+      $unwind: "$comments.ownerDetails", 
+    },
+    {
+      $group: {
+        _id: "$_id",                     
+        content: { $first: "$content" },
+        media: { $first: "$media" },
+        owner: { $first: "$owner" },
+        likes: { $first: "$likes" },
+        createdAt: { $first: "$createdAt" },
+        comments: {
+          $push: {
+            _id: "$comments._id",
+            content: "$comments.content",
+            createdAt: "$comments.createdAt",
+            owner: {
+              _id: "$comments.ownerDetails._id",
+              username: "$comments.ownerDetails.username",
+              avatar: "$comments.ownerDetails.avatar",
+            },
+          },
+        },
+      },
+    },
+    {
       $project: {
         content: 1,
         media: 1,
         owner: 1,
         likes: 1,
         createdAt: 1,
-        comments: {
-          content: 1,
-          owner: 1,
-          createdAt: 1,
-        },
+        comments: 1,
       },
     },
   ]);
+
 
   console.log(tweet[0].comments);
 
