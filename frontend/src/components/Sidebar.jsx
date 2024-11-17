@@ -8,13 +8,14 @@ import {
   Hash,
   MoreHorizontal,
 } from "react-feather";
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
+import { Link } from "react-router-dom";
 
 function SidebarLink({ Icon, text, onClick, active }) {
   return (
     <div
       onClick={onClick}
-      className={`flex items-center space-x-3 p-3 hover:bg-gray-800 rounded-full cursor-pointer transition duration-200 ${
+      className={`flex items-center space-x-3 p-3 hover:bg-[#181818] rounded-full cursor-pointer transition duration-200 ${
         active ? "font-bold" : ""
       }`}
     >
@@ -36,13 +37,18 @@ function Sidebar() {
       </div>
 
       <div className="">
+      <Link to={"/"}>
         <SidebarLink Icon={Home} text="Home" />
+
+      </Link>
         <SidebarLink Icon={Hash} text="Explore" />
         <SidebarLink Icon={Bell} text="Notifications" />
         <SidebarLink Icon={Mail} text="Messages" />
         <SidebarLink Icon={Bookmark} text="Bookmarks" />
         <SidebarLink Icon={List} text="Lists" />
-        <SidebarLink Icon={User} text="Profile" />
+        <Link to={"/profile"}>
+          <SidebarLink Icon={User} text="Profile" />
+        </Link>
         <SidebarLink Icon={MoreHorizontal} text="More" />
       </div>
 
@@ -56,11 +62,9 @@ function Sidebar() {
 
 export default Sidebar;
 
-
-
 SidebarLink.propTypes = {
   Icon: PropTypes.elementType.isRequired,
   text: PropTypes.string.isRequired,
-  onClick: PropTypes.func, 
+  onClick: PropTypes.func,
   active: PropTypes.bool,
 };

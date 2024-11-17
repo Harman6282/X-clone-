@@ -25,8 +25,15 @@ function Feed() {
 
   return (
     <div className="flex-grow border-l border-r border-gray-700 max-w-2xl text-white w-2/3">
-      <div className="sticky top-0 bg-black bg-opacity-95 border-b border-gray-700 p-4">
-        <h2 className="text-xl font-bold">Home</h2>
+      <div className=" flex  sticky top-0 bg-black bg-opacity-95 border-b border-gray-700 ">
+        <div className="w-1/2 hover:bg-[#181818] ">
+          {" "}
+          <h2 className="p-4 text-lg font-bold text-center ">For you</h2>
+        </div>
+        <div className=" p-4 w-1/2 hover:bg-[#181818] text-center">
+          {" "}
+          <h2 className="text-lg font-bold ">Following</h2>
+        </div>
       </div>
 
       <div className="p-4 border-b border-gray-700 ">

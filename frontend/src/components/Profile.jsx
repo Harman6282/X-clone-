@@ -23,7 +23,7 @@ function ProfileTabs({ activeTab, setActiveTab }) {
 }
 
 function Profile() {
-  const [activeTab, setActiveTab] = useState('Posts');
+  
   const [userPosts] = useState([
     {
       id: '1',
@@ -44,7 +44,7 @@ function Profile() {
   ]);
 
   return (
-    <div className="flex-grow border-l border-r border-gray-700 max-w-2xl">
+    <div className="flex-grow border-l border-r border-gray-700 max-w-2xl w-2/3">
       {/* Header */}
       <div className="sticky top-0 bg-black bg-opacity-95 z-50">
         <div className="flex items-center p-4 space-x-4">

@@ -38,10 +38,15 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   const checkEmailExistence = await User.findOne({ email });
+  const checkUsernameExistence = await User.findOne({ username });
 
   if (checkEmailExistence) {
     // check if the user already exist or not
     throw new apiError(409, "User alredy exits with this email");
+  }
+  if (checkUsernameExistence) {
+    // check if the user already exist or not
+    throw new apiError(409, "Username already taken");
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
@@ -70,16 +75,16 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 const signinUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const { username, password } = req.body;
 
   // validating fields
-  if (!email || !isValidEmail(email)) {
-    throw new apiError(499, "Please enter valid email");
+  if (!username) {
+    throw new apiError(499, "Please enter valid username");
   }
   if (!password) {
     throw new apiError(499, "password is required");
   }
-  const existingUser = await User.findOne({ email });
+  const existingUser = await User.findOne({ username });
 
   if (!existingUser) {
     throw new apiError(409, "User not found");
