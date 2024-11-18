@@ -9,7 +9,7 @@ import {
 } from "react-router-dom";
 import Feed from "./components/Feed";
 import Profile from "./components/Profile";
-import Signup from "./components/Signup";
+import AuthUser from "./components/AuthUser";
 import App from "./App";
 import StandaloneLayout from "./StandloneLayout";
 import { Toaster } from "react-hot-toast";
@@ -22,8 +22,8 @@ const router = createBrowserRouter(
         <Route path="/profile" element={<Profile />} />
       </Route>
       <Route path="/" element={<StandaloneLayout />}>
-        <Route path="/signup" element={<Signup type={"signup"} />} />
-        <Route path="/signin" element={<Signup type={"signin"} />} />
+        <Route path="/signup" element={<AuthUser type={"signup"} />} />
+        <Route path="/signin" element={<AuthUser type={"signin"} />} />
       </Route>
     </>
   )

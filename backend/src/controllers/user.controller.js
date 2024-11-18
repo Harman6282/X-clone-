@@ -79,15 +79,15 @@ const signinUser = asyncHandler(async (req, res) => {
 
   // validating fields
   if (!username) {
-    throw new apiError(499, "Please enter valid username");
+    throw new apiError(400, "Please enter valid username");
   }
   if (!password) {
-    throw new apiError(499, "password is required");
+    throw new apiError(400, "password is required");
   }
   const existingUser = await User.findOne({ username });
 
   if (!existingUser) {
-    throw new apiError(409, "User not found");
+    throw new apiError(404, "User not found");
   }
   // validating the password
   if (!(await isValidPassword(password, existingUser.password))) {
@@ -98,6 +98,8 @@ const signinUser = asyncHandler(async (req, res) => {
     // generating new  token
     generateAndSetToken(existingUser, res);
     await existingUser.save({ validateBeforeSave: false });
+
+
   }
 
   const response = await User.findById(existingUser._id).select(
@@ -106,7 +108,7 @@ const signinUser = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new apiResponse(200, response, "User Signin successfully"));
+    .json(new apiResponse(200, response, "Signin successfully"));
 });
 
 const logoutUser = asyncHandler(async (req, res) => {

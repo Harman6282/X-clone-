@@ -1,33 +1,46 @@
 import PropTypes from "prop-types";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 
-function Signup({ type }) {
+function AuthUser({ type }) {
   const [formData, setFormData] = useState({
     name: "",
     username: "",
     email: "",
     password: "",
   });
+  const navigate = useNavigate();
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
+  // handle sign in
+
   const handleSignin = async (e) => {
-    // e.preventDefault();
-    // console.log(formData)
-    // try {
-    //     const response = await axios.post( `http://localhost:3000/api/v1/users/signin`, formData, {
-    //         headers: {
-    //           "Content-Type": "application/json",
-    //         },
-    //       });
-    //     console.log(response);
-    // } catch (error) {
-    //     console.log(error);
-    // }
+    e.preventDefault();
+
+    try {
+      const response = await axios.post(
+        `${backendUrl}/users/signin`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+      console.log(response);
+      toast.success(response.data.message);
+      navigate("/");
+    } catch (error) {
+      console.log(error.response.data.message);
+      toast.error(error.response.data.message);
+    }
   };
+
+  // handle sign up
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -40,11 +53,15 @@ function Signup({ type }) {
           headers: {
             "Content-Type": "application/json",
           },
+          withCredentials: true
         }
       );
       console.log(response);
+      toast.success(response.data.message);
+      navigate("/");
     } catch (error) {
-      console.log(error.response);
+      console.log(error.response.data.message);
+      toast.error(error.response.data.message);
     }
   };
 
@@ -160,9 +177,9 @@ function Signup({ type }) {
   );
 }
 
-export default Signup;
+export default AuthUser;
 
-Signup.propTypes = {
+AuthUser.propTypes = {
   // Add prop types validation
   type: PropTypes.string.isRequired,
 };
