@@ -220,6 +220,7 @@ const getCurrentUser = asyncHandler(async (req, res) => {
             createdAt:1,
             "tweets._id": 1,
          "tweets.content": 1,
+         "tweets.comments": 1,
          "tweets.media": 1,
          "tweets.likes": 1,
          "tweets.createdAt": 1,

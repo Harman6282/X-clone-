@@ -13,6 +13,9 @@ import AuthUser from "./components/AuthUser";
 import App from "./App";
 import StandaloneLayout from "./StandloneLayout";
 import { Toaster } from "react-hot-toast";
+import { Provider } from 'react-redux';
+import store from './store/store';
+import { Bookmark } from "react-feather";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -20,6 +23,7 @@ const router = createBrowserRouter(
       <Route path="/" element={<App />}>
         <Route path="/" element={<Feed />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/bookmark" element={<Bookmark />} />
       </Route>
       <Route path="/" element={<StandaloneLayout />}>
         <Route path="/signup" element={<AuthUser type={"signup"} />} />
@@ -30,7 +34,9 @@ const router = createBrowserRouter(
 );
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
+  <Provider store={store
+  }>
+  <StrictMode >
     <RouterProvider router={router} />
     <Toaster
       position="bottom-left"
@@ -43,4 +49,5 @@ createRoot(document.getElementById("root")).render(
       }}
     />
   </StrictMode>
+  </Provider>
 );

@@ -2,49 +2,35 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, Calendar, Link as LinkIcon } from "react-feather";
 import Post from "./Post";
 import axios from "axios";
+import { useDispatch, useSelector } from "react-redux";
+// import { setLoading, setProfile } from "../store/profileSlice";
 
 function ProfileTabs() {
-  const tabs = ["Posts", "Replies", "Likes"];
-
   return (
-    <div className="flex border-b border-gray-700">
-      {tabs.map((tab) => (
-        <button key={tab} className="flex-1 py-4 hover:bg-gray-900">
-          {tab}
-        </button>
-      ))}
-    </div>
+    <button className="flex w-full justify-around  ">
+      <p className="px-10 py-4 hover:bg-[#181818]">Posts</p>
+      <p className="px-10 py-4 hover:bg-[#181818]">Replies</p>
+      <p className="px-10 py-4 hover:bg-[#181818]">Likes</p>
+    </button>
   );
 }
 
 function Profile() {
   const [userProfile, setUserProfile] = useState(null);
+  const loadingStatus = useSelector((store) => store.profile.loading);
 
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
-
-  async function getCurrProfile() {
-    try {
-      const response = await axios.get(`${backendUrl}/users/current-user`, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
-      });
-      console.log(response.data.data);
-      setUserProfile(response.data.data);
-    } catch (error) {
-      console.log(error.response?.data?.message || "An error occurred");
-    }
-  }
-
+  const currProfile = useSelector((store) => store.profile.profile);
   useEffect(() => {
-    getCurrProfile();
-  }, []);
-  return (
+    setUserProfile(currProfile);
+  }, [currProfile]);
+
+  return loadingStatus ? (
+    <div className="text-white text-center text-3xl">Loading...</div>
+  ) : (
     <div className="flex-grow border-l border-r border-gray-700 max-w-2xl w-2/3 text-white">
       {/* Header */}
-      <div className="sticky top-0 bg-black bg-opacity-95 z-50">
-        <div className="flex items-center p-4 space-x-4">
+      <div className="sticky top-0 bg-black bg-opacity-95 z-50 h-16">
+        <div className="flex items-center p-2 space-x-4">
           <button className="rounded-full p-2 hover:bg-gray-800">
             <ArrowLeft className="h-5 w-5" />
           </button>
@@ -126,6 +112,9 @@ function Profile() {
             avatar={userProfile?.avatar}
             content={post?.content}
             timestamp={new Date(post?.createdAt).toLocaleDateString()}
+            comment={0}
+            likes={post.likes}
+            media={post.media}
           />
         ))}
       </div>
