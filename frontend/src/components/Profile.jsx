@@ -18,42 +18,20 @@ function ProfileTabs() {
 }
 
 function Profile() {
-  const  [userProfile, setUserProfile] = useState(null)
-  const [userPosts] = useState([
-    {
-      id: "1",
-      name: "Elon Musk",
-      username: "elonmusk",
-      avatar:
-        "https://pbs.twimg.com/profile_images/1683325380441128960/yRsRRjGO_400x400.jpg",
-      content: "X is the future of social media",
-      timestamp: "2h",
-    },
-    {
-      id: "2",
-      name: "Elon Musk",
-      username: "elonmusk",
-      avatar:
-        "https://pbs.twimg.com/profile_images/1683325380441128960/yRsRRjGO_400x400.jpg",
-      content: "Making life multiplanetary 🚀",
-      timestamp: "5h",
-    },
-  ]);
+  const [userProfile, setUserProfile] = useState(null);
+
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-
   async function getCurrProfile() {
-
     try {
       const response = await axios.get(`${backendUrl}/users/current-user`, {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${document.cookie}`
         },
         withCredentials: true,
       });
       console.log(response.data.data);
-      setUserProfile(response.data.data)
+      setUserProfile(response.data.data);
     } catch (error) {
       console.log(error.response?.data?.message || "An error occurred");
     }
@@ -62,8 +40,6 @@ function Profile() {
   useEffect(() => {
     getCurrProfile();
   }, []);
-
-
   return (
     <div className="flex-grow border-l border-r border-gray-700 max-w-2xl w-2/3 text-white">
       {/* Header */}
@@ -74,15 +50,21 @@ function Profile() {
           </button>
           <div>
             <h2 className="text-xl font-bold">{userProfile?.name}</h2>
-            <p className="text-gray-500 text-sm">2.8K posts</p>
+            <p className="text-gray-500 text-sm">
+              {userProfile?.tweets.length} posts
+            </p>
           </div>
         </div>
       </div>
 
       {/* Profile Header */}
       <div className="relative">
-        <div className="h-48 bg-gray-800">
-          <img src={userProfile?.coverImage} alt="" />
+        <div className="h-48  bg-gray-800">
+          <img
+            className="h-48 w-full object-cover"
+            src={userProfile?.coverImage}
+            alt=""
+          />
         </div>
         <div className="absolute -bottom-16 left-4">
           <img
@@ -103,15 +85,12 @@ function Profile() {
 
         <div className="mb-4">
           <h2 className="text-xl font-bold">{userProfile?.name}</h2>
-          <p className="text-gray-500">{userProfile?.username}</p>
+          <p className="text-gray-500">@{userProfile?.username}</p>
         </div>
 
-        <p className="mb-4">
-        {userProfile?.bio}
-        </p>
+        <p className="mb-4">{userProfile?.bio}</p>
 
         <div className="flex flex-wrap gap-y-2 text-gray-500 mb-4">
-          
           <div className="flex items-center mr-4">
             <LinkIcon className="h-5 w-5 mr-2" />
             <a href="https://x.com" className="text-blue-500 hover:underline">
@@ -126,11 +105,11 @@ function Profile() {
 
         <div className="flex space-x-4 mb-4">
           <button className="hover:underline">
-            <span className="font-bold">169</span>{" "}
+            <span className="font-bold">{userProfile?.following.length}</span>{" "}
             <span className="text-gray-500">Following</span>
           </button>
           <button className="hover:underline">
-            <span className="font-bold">171.5M</span>{" "}
+            <span className="font-bold">{userProfile?.followers.length}</span>{" "}
             <span className="text-gray-500">Followers</span>
           </button>
         </div>
@@ -139,8 +118,15 @@ function Profile() {
       {/* Tabs and Posts */}
       <ProfileTabs />
       <div className="divide-y divide-gray-700">
-        {userPosts.map((post) => (
-          <Post key={post.id} post={post} />
+        {userProfile?.tweets.map((post) => (
+          <Post
+            key={post._id}
+            name={userProfile?.name}
+            username={userProfile?.username}
+            avatar={userProfile?.avatar}
+            content={post?.content}
+            timestamp={new Date(post?.createdAt).toLocaleDateString()}
+          />
         ))}
       </div>
     </div>

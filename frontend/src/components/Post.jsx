@@ -1,21 +1,21 @@
 import { Heart, MessageCircle, Repeat, Share } from 'react-feather';
 
-function Post({ post }) {
+function Post({ name , avatar,username , timestamp, content }) {
   return (
     <div className="p-4 border-b border-gray-700 hover:bg-gray-900 transition duration-200 cursor-pointer">
       <div className="flex space-x-3">
         <img
-          src={post.avatar}
-          alt={post.name}
+          src={avatar}
+          alt={name}
           className="h-12 w-12 rounded-full"
         />
         <div>
           <div className="flex items-center space-x-2">
-            <span className="font-bold">{post.name}</span>
-            <span className="text-gray-500">@{post.username}</span>
-            <span className="text-gray-500">· {post.timestamp}</span>
+            <span className="font-bold">{name}</span>
+            <span className="text-gray-500">@{username}</span>
+            <span className="text-gray-500">· {timestamp}</span>
           </div>
-          <p className="mt-2 text-white">{post.content}</p>
+          <p className="mt-2 text-white">{content}</p>
           <div className="flex justify-between mt-4 w-full max-w-md">
             <div className="flex items-center space-x-1 text-gray-500 group">
               <div className="p-2 rounded-full group-hover:bg-blue-900/40 group-hover:text-blue-500">

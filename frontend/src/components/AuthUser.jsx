@@ -35,7 +35,7 @@ function AuthUser({ type }) {
       toast.success(response.data.message);
       navigate("/");
     } catch (error) {
-      console.log(error.response.data.message);
+      console.log(error.response.data);
       toast.error(error.response.data.message);
     }
   };

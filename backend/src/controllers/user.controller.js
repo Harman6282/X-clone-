@@ -11,7 +11,7 @@ import {
   uploadOnCloudinary,
 } from "../utils/cloudinary.js";
 import mongoose from "mongoose";
-import { Follow } from "../models/follow.model.js";
+import { Tweet } from "../models/tweet.model.js";
 
 function isValidEmail(email) {
   return validator.isEmail(email);
@@ -125,12 +125,119 @@ const logoutUser = asyncHandler(async (req, res) => {
 });
 
 const getCurrentUser = asyncHandler(async (req, res) => {
+  const userId = req.user?._id;
   if (!req.user) {
     throw new apiError(401, "User not authenticated");
   }
+  const respose = await User.aggregate([
+    {
+      $match: {
+        _id: userId
+      },
+      
+    },
+    {
+      $lookup: {
+        from: "tweets",
+        localField: "_id",
+        foreignField: "owner",
+        as: "tweets"
+      }
+    },
+    {
+      // here finding the documents from the follows db collection in which the following field's id is userProfile id and naming it as followers
+      $lookup: {
+        from: "follows",
+        localField: "_id",
+        foreignField: "following",
+        as: "followers",
+      },
+    },
+    {
+      // here finding the documents from the follows db collection in which the following field's id is userProfile id and naming it as followers
+      $lookup: {
+        from: "follows",
+        localField: "_id",
+        foreignField: "following",
+        as: "followers",
+      },
+    },
+    {
+      // here finding the documents from the follows db collection in which the follower id is userProfile id and naming it as following
+      $lookup: {
+        from: "follows",
+        localField: "_id",
+        foreignField: "follower",
+        as: "following",
+      },
+    },
+    
+    {
+      // here adding and mapping the followers to the user Profile which are going to be return
+      $addFields: {
+        followers: {
+          $map: {
+            input: "$followers",
+            as: "follower",
+            in: "$$follower.follower", // extract only the follower ID
+          },
+        },
+        following: {
+          $map: {
+            input: "$following",
+            as: "follower",
+            in: "$$follower.following", // extract only the follwing ID
+          },
+        },
+      },
+    },
+    {
+      // here populating the followers data
+      $lookup: {
+        from: "users",
+        localField: "followers",
+        foreignField: "_id",
+        as: "followers",
+      },
+    },
+    {
+      // here populating the following user data
+      $lookup: {
+        from: "users",
+        localField: "following",
+        foreignField: "_id",
+        as: "following",
+      },
+    },
+    {
+      $project:{
+            name: 1,
+            bio: 1,
+            username: 1,
+            email: 1,
+            avatar: 1,
+            coverImage:1,
+            createdAt:1,
+            "tweets._id": 1,
+         "tweets.content": 1,
+         "tweets.media": 1,
+         "tweets.likes": 1,
+         "tweets.createdAt": 1,
+         "followers.name": 1,
+         "followers.avatar": 1,
+         "followers.username": 1,
+         "followers.bio": 1,
+         "following.name": 1,
+         "following.avatar": 1,
+         "following.username": 1,
+         "following.bio": 1,
+      }
+    }
+  ])
+
   return res
     .status(200)
-    .json(new apiResponse(200, req.user, "current user fetched successfully"));
+    .json(new apiResponse(200, respose[0] , "current user fetched successfully"));
 });
 
 const updateAccoutDetails = asyncHandler(async (req, res) => {
@@ -283,6 +390,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
         as: "following",
       },
     },
+    
     {
       // here adding and mapping the followers to the user Profile which are going to be return
       $addFields: {
@@ -321,6 +429,14 @@ const getUserProfile = asyncHandler(async (req, res) => {
       },
     },
     {
+      $lookup: {
+        from: "tweets",
+        localField: "_id",
+        foreignField: "owner",
+        as: "tweets"
+      }
+    },
+    {
       // selecting the fields which are needed
       $project: {
         "name": 1,
@@ -331,6 +447,10 @@ const getUserProfile = asyncHandler(async (req, res) => {
         "createdAt": 1,
         "updatedAt": 1,
         "coverImage": 1,
+        "tweets.content": 1,
+         "tweets.media": 1,
+         "tweets.likes": 1,
+         "tweets.createdAt": 1,
         "followers.name": 1,
         "followers.avatar": 1,
         "followers.username": 1,
