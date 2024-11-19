@@ -1,7 +1,16 @@
 import { Heart, MessageCircle, Repeat, Share } from "react-feather";
 import PropTypes from "prop-types";
 
-function Post({ name, avatar, username, timestamp, content, media , comment, likes }) {
+function Post({
+  name,
+  avatar,
+  username,
+  timestamp,
+  content,
+  media,
+  comment,
+  likes,
+}) {
   return (
     <div className="p-4 border-b border-gray-700 hover:bg-gray-900 transition duration-200 cursor-pointer">
       <div className="flex space-x-3">
@@ -13,9 +22,28 @@ function Post({ name, avatar, username, timestamp, content, media , comment, lik
             <span className="text-gray-500">· {timestamp}</span>
           </div>
           <p className="mt-2 text-white">{content}</p>
+
+          {media && (
+            <div className="mt-4">
+              {media.endsWith(".mp4") || media.endsWith(".webm") ? (
+                <video
+                  src={media}
+                  controls
+                  muted
+                  className="w-full max-w-xl rounded-lg"
+                />
+              ) : (
+                <img
+                  src={media}
+                  alt="Media"
+                  className="w-full max-w-xl rounded-lg"
+                />
+              )}
+            </div>
+          )}
           <div className="flex justify-between mt-4 w-full max-w-md">
             <div className="flex items-center space-x-1 mr-4 text-gray-500 group">
-            {comment}
+              {comment.length}
               <div className="p-2 rounded-full group-hover:bg-blue-900/40 group-hover:text-blue-500">
                 <MessageCircle className="h-5 w-5" />
               </div>
@@ -53,6 +81,7 @@ Post.propTypes = {
   username: PropTypes.string.isRequired,
   timestamp: PropTypes.string.isRequired,
   content: PropTypes.string.isRequired,
-  comment: PropTypes.string.isRequired,
-  likes: PropTypes.string.isRequired,
+  comment: PropTypes.array.isRequired,
+  likes: PropTypes.array.isRequired,
+  media: PropTypes.string,
 };

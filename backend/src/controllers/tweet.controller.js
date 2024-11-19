@@ -101,12 +101,90 @@ const deleteTweet = asyncHandler(async (req, res) => {
     );
 });
 const getAllTweets = asyncHandler(async (req, res) => {
-  const allTweets = await Tweet.find();
+  const tweets = await Tweet.aggregate([
+    {
+      $lookup: {
+        from: "comments",
+        localField: "_id",
+        foreignField: "tweet",
+        as: "comments",
+      },
+    },
+    {
+      $unwind: {
+        path: "$comments",
+        preserveNullAndEmptyArrays: true
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "comments.owner",
+        foreignField: "_id",
+        as: "comments.ownerDetails",
+      },
+    },
+    {
+      $unwind: {
+        path: "$comments.ownerDetails",
+        preserveNullAndEmptyArrays: true
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "owner",
+        foreignField: "_id",
+        as: "owner",
+      },
+    },
+    {
+      $unwind: "$owner", // Flattening the owner array
+    },
+    {
+      $group: {
+        _id: "$_id",
+        content: { $first: "$content" },
+        media: { $first: "$media" },
+        owner: { $first: "$owner" },
+        likes: { $first: "$likes" },
+        createdAt: { $first: "$createdAt" },
+        comments: {
+          $push: {
+            _id: "$comments._id",
+            content: "$comments.content",
+            createdAt: "$comments.createdAt",
+            owner: {
+              _id: "$comments.ownerDetails._id",
+              username: "$comments.ownerDetails.username",
+              avatar: "$comments.ownerDetails.avatar",
+            },
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        content: 1,
+        media: 1,
+        "owner._id": 1,
+        "owner.name": 1,
+        "owner.avatar": 1,
+        "owner.username": 1,
+        likes: 1,
+        createdAt: 1,
+        comments: 1,
+      },
+    },
+  ]);
+
+  console.log(tweets);
 
   return res
     .status(200)
-    .json(new apiResponse(200, allTweets, "All tweets fetched successfylly"));
+    .json(new apiResponse(200, tweets, "All tweets fetched successfylly"));
 });
+
 const getTweetById = asyncHandler(async (req, res) => {
   const { tweetId } = req.params;
 
@@ -130,22 +208,22 @@ const getTweetById = asyncHandler(async (req, res) => {
       },
     },
     {
-      $unwind: "$comments",       
+      $unwind: "$comments",
     },
     {
       $lookup: {
-        from: "users",               
+        from: "users",
         localField: "comments.owner",
-        foreignField: "_id",         
+        foreignField: "_id",
         as: "comments.ownerDetails",
       },
     },
     {
-      $unwind: "$comments.ownerDetails", 
+      $unwind: "$comments.ownerDetails",
     },
     {
       $group: {
-        _id: "$_id",                     
+        _id: "$_id",
         content: { $first: "$content" },
         media: { $first: "$media" },
         owner: { $first: "$owner" },
@@ -177,13 +255,13 @@ const getTweetById = asyncHandler(async (req, res) => {
     },
   ]);
 
-
   console.log(tweet[0].comments);
 
   return res
     .status(200)
     .json(new apiResponse(200, tweet[0], "Tweet fetched successfully"));
 });
+
 const toggleTweetLike = asyncHandler(async (req, res) => {
   const { tweetId } = req.params;
   const userId = req.user?._id;

@@ -1,27 +1,35 @@
-import { useState } from "react";
+import axios from "axios";
 import Post from "./Post";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { setLoading, setTweets } from "../store/tweetSlice";
 
 function Feed() {
-  const [posts] = useState([
-    {
-      id: "1",
-      name: "Elon Musk",
-      username: "elonmusk",
-      avatar:
-        "https://pbs.twimg.com/profile_images/1683325380441128960/yRsRRjGO_400x400.jpg",
-      content: "X is the future of social media",
-      timestamp: "2h",
-    },
-    {
-      id: "2",
-      name: "X",
-      username: "X",
-      avatar:
-        "https://pbs.twimg.com/profile_images/1683899100922511362/5lY42eHs_400x400.jpg",
-      content: "Everything app",
-      timestamp: "4h",
-    },
-  ]);
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const dispatch = useDispatch();
+  async function getTweets() {
+    dispatch(setLoading(true));
+    try {
+      const response = await axios.get(`${backendUrl}/tweet/tweets`, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+      dispatch(setTweets(response.data.data));
+      console.log(response.data.data);
+    } catch (error) {
+      console.log(error.response?.data?.message || "An error occurred");
+    }
+  }
+
+  useEffect(() => {
+    getTweets();
+  }, []);
+
+  const tweets = useSelector((store) => store.tweets.tweets);
+
+
 
   return (
     <div className="flex-grow border-l border-r border-gray-700 max-w-2xl text-white w-2/3">
@@ -62,9 +70,19 @@ function Feed() {
       </div>
 
       <div>
-        {/* {posts.map((post) => (
-          <Post key={Date.now()} />
-        ))} */}
+        {tweets.map((post) => (
+          <Post
+            key={post._id}
+            content={post.content}
+            avatar={post.owner.avatar}
+            media={post.media}
+            username={post.owner.username}
+            name={post.owner.name}
+            timestamp={post.createdAt}
+            comment={post.comments}
+            likes={post.likes}
+          />
+        ))}
       </div>
     </div>
   );
