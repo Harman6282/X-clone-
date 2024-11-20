@@ -19,7 +19,7 @@ router
 router.route("/delete-tweet/:tweetId").delete(verifyUser, deleteTweet);
 router.route("/tweets").get(verifyUser, getAllTweets);
 router.route("/:tweetId").get(verifyUser, getTweetById);
-router.route("/toggle-like-tweet/:tweetId").patch(verifyUser, toggleTweetLike);
+router.route("/toggle-like/:tweetId").patch(verifyUser, toggleTweetLike);
 router.route("/followings-tweets").patch(verifyUser, getFollowingUsersTweets);
 
 export default router;

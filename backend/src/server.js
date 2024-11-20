@@ -12,5 +12,5 @@ connectDB()
     });
   })
   .catch(() => {
-    console.log("Error while starting server or connectig the MONGODB");
+    console.log("Error while starting server or connecting the MONGODB");
   });

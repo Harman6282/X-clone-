@@ -73,6 +73,7 @@ function Feed() {
         {tweets.map((post) => (
           <Post
             key={post._id}
+            id={post._id}
             content={post.content}
             avatar={post.owner.avatar}
             media={post.media}

@@ -1,7 +1,13 @@
 import { Heart, MessageCircle, Repeat, Share } from "react-feather";
 import PropTypes from "prop-types";
+import { useDispatch } from "react-redux";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { toast } from "react-hot-toast";
+import { toggleTweetLike } from "../../../backend/src/controllers/tweet.controller";
 
 function Post({
+  id,
   name,
   avatar,
   username,
@@ -11,6 +17,30 @@ function Post({
   comment,
   likes,
 }) {
+  // const [isLiked , setIsLiked] = useState(false)
+  // const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  // const dispatch = useDispatch();
+
+  // async function handleLike() {
+  //   try {
+  //     const response = await axios.patch(                                                                                  
+  //       `${backendUrl}/tweet/toggle-like/${id}`,
+  //       {},
+  //       {
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         withCredentials: true,
+  //       }
+  //     );
+  //     console.log(response.data.message);
+  //     dispatch(toggleTweetLike({id}))
+  //     toast.success(response.data.message);
+  //   } catch (error) {
+  //     console.log(error.response?.data || "An error occurred");
+  //   }
+  // }
+
   return (
     <div className="p-4 border-b border-gray-700 hover:bg-gray-900 transition duration-200 cursor-pointer">
       <div className="flex space-x-3">
@@ -54,7 +84,10 @@ function Post({
                 <Repeat className="h-5 w-5" />
               </div>
             </div>
-            <div className="flex items-center mr-4 space-x-1 text-gray-500 group">
+            <div
+              // onClick={handleLike}
+              className="flex items-center mr-4 space-x-1 text-gray-500 group"
+            >
               {likes.length}
               <div className="p-2 rounded-full group-hover:bg-red-900/40 group-hover:text-red-500">
                 <Heart className="h-5 w-5" />

@@ -15,20 +15,19 @@ const tweetSchema = new Schema(
       type: String,
     },
     owner: {
-      type: mongoose.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true
     },
     likes: [
       {
-        type: mongoose.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: "User",
+        default: []
       },
     ],
   },
   { timestamps: true }
 );
 
-const Tweet = mongoose.model("Tweet", tweetSchema);
-
-export { Tweet };
+export const Tweet = mongoose.model("Tweet", tweetSchema);
