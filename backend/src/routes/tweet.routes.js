@@ -23,3 +23,4 @@ router.route("/toggle-like/:tweetId").patch(verifyUser, toggleTweetLike);
 router.route("/followings-tweets").patch(verifyUser, getFollowingUsersTweets);
 
 export default router;
+

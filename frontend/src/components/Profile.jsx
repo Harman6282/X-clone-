@@ -48,8 +48,8 @@ function Profile() {
         <div className="h-48  bg-gray-800">
           <img
             className="h-48 w-full object-cover"
-            src={userProfile?.coverImage}
-            alt=""
+            src={userProfile?.coverImage  || null}
+          
           />
         </div>
         <div className="absolute -bottom-16 left-4">

@@ -3,7 +3,8 @@ import Post from "./Post";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { setLoading, setTweets } from "../store/tweetSlice";
-
+import { Link } from "react-router-dom";
+import Cookies from "js-cookie";
 function Feed() {
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const dispatch = useDispatch();
@@ -17,7 +18,6 @@ function Feed() {
         withCredentials: true,
       });
       dispatch(setTweets(response.data.data));
-      console.log(response.data.data);
     } catch (error) {
       console.log(error.response?.data?.message || "An error occurred");
     }
@@ -28,8 +28,6 @@ function Feed() {
   }, []);
 
   const tweets = useSelector((store) => store.tweets.tweets);
-
-
 
   return (
     <div className="flex-grow border-l border-r border-gray-700 max-w-2xl text-white w-2/3">
@@ -46,11 +44,7 @@ function Feed() {
 
       <div className="p-4 border-b border-gray-700 ">
         <div className="flex space-x-4">
-          <img
-            src="https://pbs.twimg.com/profile_images/1683899100922511362/5lY42eHs_400x400.jpg"
-            alt="user"
-            className="h-12 w-12 rounded-full"
-          />
+          <img src="" alt="user" className="h-12 w-12 rounded-full" />
           <div className="flex-grow">
             <textarea
               className="w-full bg-transparent outline-none text-lg placeholder-gray-600"
@@ -70,20 +64,22 @@ function Feed() {
       </div>
 
       <div>
-        {tweets.map((post) => (
-          <Post
-            key={post._id}
-            id={post._id}
-            content={post.content}
-            avatar={post.owner.avatar}
-            media={post.media}
-            username={post.owner.username}
-            name={post.owner.name}
-            timestamp={post.createdAt}
-            comment={post.comments}
-            likes={post.likes}
-          />
-        ))}
+        {tweets.length > 0 &&
+          tweets.map((post) => (
+            <Link to={`/tweet/${post._id}`} key={post._id}>
+              <Post
+                id={post._id}
+                content={post.content}
+                avatar={post.owner.avatar}
+                media={post.media}
+                username={post.owner.username}
+                name={post.owner.name}
+                timestamp={post.createdAt}
+                comment={post.comments}
+                likes={post.likes}
+              />
+            </Link>
+          ))}
       </div>
     </div>
   );

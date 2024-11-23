@@ -1,6 +1,6 @@
 function Widgets() {
   return (
-    <div className="hidden lg:flex flex-col w-80 p-4 space-y-4">
+    <div className="hidden lg:flex flex-col w-80 p-4 space-y-4 border-s border-gray-700">
       <div className="sticky top-0 py-2">
         <div className="bg-gray-800 rounded-full p-3">
           <input

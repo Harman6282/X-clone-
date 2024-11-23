@@ -1,10 +1,11 @@
-import { Heart, MessageCircle, Repeat, Share } from "react-feather";
+import { MessageCircle, Repeat, Share } from "react-feather";
 import PropTypes from "prop-types";
-import { useDispatch } from "react-redux";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
-import { toggleTweetLike } from "../../../backend/src/controllers/tweet.controller";
+import Cookies from "js-cookie";
+import { FaRegHeart } from "react-icons/fa";
+import { FaHeart } from "react-icons/fa6";
 
 function Post({
   id,
@@ -16,33 +17,27 @@ function Post({
   media,
   comment,
   likes,
+  isLiked,
+  likeCount,
+  handleLike,
 }) {
-  // const [isLiked , setIsLiked] = useState(false)
-  // const backendUrl = import.meta.env.VITE_BACKEND_URL;
-  // const dispatch = useDispatch();
+  const [liked, setLiked] = useState(isLiked);
+  const [count, setCount] = useState(likeCount);
 
-  // async function handleLike() {
-  //   try {
-  //     const response = await axios.patch(                                                                                  
-  //       `${backendUrl}/tweet/toggle-like/${id}`,
-  //       {},
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         withCredentials: true,
-  //       }
-  //     );
-  //     console.log(response.data.message);
-  //     dispatch(toggleTweetLike({id}))
-  //     toast.success(response.data.message);
-  //   } catch (error) {
-  //     console.log(error.response?.data || "An error occurred");
-  //   }
-  // }
+  useEffect(() => {
+    setLiked(isLiked);
+    setCount(likeCount);
+  }, [isLiked, likeCount]);
+
+  async function handleLikeToggle() {
+    await handleLike(id);
+    setLiked((prev) => !prev); // Locally toggle like
+    setCount((prev) => (liked ? prev - 1 : prev + 1)); // Update count locally
+  }
+
 
   return (
-    <div className="p-4 border-b border-gray-700 hover:bg-gray-900 transition duration-200 cursor-pointer">
+    <div className="p-4 border-b border-gray-700 transition duration-200 cursor-pointer">
       <div className="flex space-x-3">
         <img src={avatar} alt={name} className="h-12 w-12 rounded-full" />
         <div>
@@ -71,6 +66,7 @@ function Post({
               )}
             </div>
           )}
+
           <div className="flex justify-between mt-4 w-full max-w-md">
             <div className="flex items-center space-x-1 mr-4 text-gray-500 group">
               {comment.length}
@@ -85,12 +81,16 @@ function Post({
               </div>
             </div>
             <div
-              // onClick={handleLike}
-              className="flex items-center mr-4 space-x-1 text-gray-500 group"
+              onClick={() => handleLikeToggle()}
+              className="flex items-center mr-4 space-x-1 text-gray-500 group cursor-pointer"
             >
-              {likes.length}
-              <div className="p-2 rounded-full group-hover:bg-red-900/40 group-hover:text-red-500">
-                <Heart className="h-5 w-5" />
+              {count}
+              <div className="p-2 rounded-full group-hover:bg-red-900/40">
+                {liked ? (
+                  <FaHeart className="h-5 w-5 text-red-500" />
+                ) : (
+                  <FaRegHeart className="h-5 w-5" />
+                )}
               </div>
             </div>
             <div className="flex items-center mr-4 space-x-1 text-gray-500 group">
@@ -109,7 +109,8 @@ function Post({
 export default Post;
 
 Post.propTypes = {
-  name: PropTypes.string.isRequired, // Add prop validation
+  id: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
   avatar: PropTypes.string.isRequired,
   username: PropTypes.string.isRequired,
   timestamp: PropTypes.string.isRequired,
@@ -117,4 +118,8 @@ Post.propTypes = {
   comment: PropTypes.array.isRequired,
   likes: PropTypes.array.isRequired,
   media: PropTypes.string,
+  comments: PropTypes.array,
+  handleLike: PropTypes.func.isRequired,
+  isLiked: PropTypes.bool.isRequired,
+  likeCount: PropTypes.number.isRequired,
 };

@@ -30,7 +30,7 @@ const userSchema = new Schema(
     },
     avatar: {
       type: String,
-      default: "https://archive.org/download/twitter-default-pfp/e.png",
+      default: "https://pbs.twimg.com/media/EfmzmUeUYAAV3PJ.jpg",
     },
     avatar_public_id: {
       type: String,

@@ -113,7 +113,7 @@ const getAllTweets = asyncHandler(async (req, res) => {
     {
       $unwind: {
         path: "$comments",
-        preserveNullAndEmptyArrays: true
+        preserveNullAndEmptyArrays: true,
       },
     },
     {
@@ -127,7 +127,7 @@ const getAllTweets = asyncHandler(async (req, res) => {
     {
       $unwind: {
         path: "$comments.ownerDetails",
-        preserveNullAndEmptyArrays: true
+        preserveNullAndEmptyArrays: true,
       },
     },
     {
@@ -188,11 +188,18 @@ const getAllTweets = asyncHandler(async (req, res) => {
 const getTweetById = asyncHandler(async (req, res) => {
   const { tweetId } = req.params;
 
+  // Validate tweetId
+  if (!mongoose.Types.ObjectId.isValid(tweetId)) {
+    throw new apiError(400, "Invalid tweet ID");
+  }
+
+  // Check if tweet exists
   const currtweet = await Tweet.findById(tweetId);
   if (!currtweet) {
     throw new apiError(404, "Tweet not found");
   }
 
+  // Aggregation pipeline
   const tweet = await Tweet.aggregate([
     {
       $match: {
@@ -208,7 +215,10 @@ const getTweetById = asyncHandler(async (req, res) => {
       },
     },
     {
-      $unwind: "$comments",
+      $unwind: {
+        path: "$comments",
+        preserveNullAndEmptyArrays: true,
+      },
     },
     {
       $lookup: {
@@ -219,30 +229,66 @@ const getTweetById = asyncHandler(async (req, res) => {
       },
     },
     {
-      $unwind: "$comments.ownerDetails",
+      $unwind: {
+        path: "$comments.ownerDetails",
+        preserveNullAndEmptyArrays: true,
+      },
     },
+
+    // Lookup to populate owner details
+    {
+      $lookup: {
+        from: "users", // The collection where user details are stored
+        localField: "owner", // The field in the post referencing the user
+        foreignField: "_id", // The field in the user collection
+        as: "ownerDetails", // The name for the populated field
+      },
+    },
+    // Unwind the ownerDetails array (since $lookup returns an array)
+    {
+      $unwind: {
+        path: "$ownerDetails",
+        preserveNullAndEmptyArrays: true, // Optional: Include posts without owner details
+      },
+    },
+    // Group stage
     {
       $group: {
         _id: "$_id",
         content: { $first: "$content" },
         media: { $first: "$media" },
-        owner: { $first: "$owner" },
+        owner: {
+          $first: {
+            _id: "$ownerDetails._id",
+            username: "$ownerDetails.username",
+            name: "$ownerDetails.name",
+            avatar: "$ownerDetails.avatar",
+          },
+        },
         likes: { $first: "$likes" },
         createdAt: { $first: "$createdAt" },
         comments: {
           $push: {
-            _id: "$comments._id",
-            content: "$comments.content",
-            createdAt: "$comments.createdAt",
-            owner: {
-              _id: "$comments.ownerDetails._id",
-              username: "$comments.ownerDetails.username",
-              avatar: "$comments.ownerDetails.avatar",
+            $cond: {
+              if: { $gt: ["$comments._id", null] },
+              then: {
+                _id: "$comments._id",
+                content: "$comments.content",
+                createdAt: "$comments.createdAt",
+                owner: {
+                  _id: "$comments.ownerDetails._id",
+                  username: "$comments.ownerDetails.username",
+                  name: "$comments.ownerDetails.name",
+                  avatar: "$comments.ownerDetails.avatar",
+                },
+              },
+              else: null,
             },
           },
         },
       },
     },
+
     {
       $project: {
         content: 1,
@@ -255,7 +301,10 @@ const getTweetById = asyncHandler(async (req, res) => {
     },
   ]);
 
-  console.log(tweet[0].comments);
+  // Check if aggregation returned data
+  if (!tweet.length) {
+    throw new apiError(404, "Tweet not found");
+  }
 
   return res
     .status(200)
@@ -280,12 +329,24 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
     await tweet.updateOne({ $pull: { likes: userId } });
     return res
       .status(200)
-      .json(new apiResponse(200, null, "Tweet unliked successfully"));
+      .json(
+        new apiResponse(
+          200,
+          { likes: tweet.likes, isLiked: !hasLiked },
+          "Tweet unliked successfully"
+        )
+      );
   } else {
     await tweet.updateOne({ $push: { likes: userId } });
     return res
       .status(200)
-      .json(new apiResponse(200, null, "Tweet liked successfully"));
+      .json(
+        new apiResponse(
+          200,
+          { likes: tweet.likes, isLiked: !hasLiked },
+          "Tweet liked successfully"
+        )
+      );
   }
 });
 

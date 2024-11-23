@@ -16,6 +16,7 @@ import { Toaster } from "react-hot-toast";
 import { Provider } from 'react-redux';
 import store from './store/store';
 import { Bookmark } from "react-feather";
+import TweetById from "./components/TweetById";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -24,6 +25,7 @@ const router = createBrowserRouter(
         <Route path="/" element={<Feed />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/bookmark" element={<Bookmark />} />
+        <Route path="/tweet/:tweetId" element={<TweetById />} />
       </Route>
       <Route path="/" element={<StandaloneLayout />}>
         <Route path="/signup" element={<AuthUser type={"signup"} />} />
