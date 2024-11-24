@@ -89,12 +89,12 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
     await comment.updateOne({ $pull: { likes: userId } });
     return res
       .status(200)
-      .json(new apiResponse(200, null, "Comment unliked successfully"));
+      .json(new apiResponse(200, {isCommentLiked: false}, "Comment unliked successfully"));
   } else {
     await comment.updateOne({ $push: { likes: userId } });
     return res
       .status(200)
-      .json(new apiResponse(200, null, "Comment liked successfully"));
+      .json(new apiResponse(200, {isCommentLiked: true}, "Comment liked successfully"));
   }
 });
 

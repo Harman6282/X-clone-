@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import { ArrowLeft, MessageCircle, Repeat, Share } from "react-feather";
-import Comments from "./Comments";
 import toast from "react-hot-toast";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 
@@ -12,7 +11,9 @@ function TweetById() {
   const [post, setPost] = useState(null);
   const { tweetId } = useParams();
   const [isLiked, setIsLiked] = useState(false);
+  const [isCommentLiked, setIsCommentLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const [commentLikeCount, setCommentLikeCount] = useState(0);
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
   async function fetchCurrUser() {
     try {
@@ -33,7 +34,9 @@ function TweetById() {
       setPost(response.data.data);
 
       const { likes } = response.data.data;
-      setIsLiked(likes.includes(userId));
+      if (likes.includes(userId)) {
+        setIsLiked((prev) => !prev);
+      }
       setLikeCount(likes.length);
     } catch (error) {
       console.error("Error fetching tweet:", error.response || error);
@@ -53,6 +56,7 @@ function TweetById() {
 
   async function handleLike() {
     try {
+      setIsLiked((prev) => !prev);
       const response = await axios.patch(
         `${backendUrl}/tweet/toggle-like/${tweetId}`,
         {},
@@ -62,15 +66,56 @@ function TweetById() {
       );
 
       const { message, data } = response.data;
-      const { likes } = data;
+      const { isLiked } = data;
 
       toast.success(message);
-      setIsLiked(likes.includes(userId));
-      console.log(isLiked)
-      setLikeCount(likes.length);
+      if (isLiked) {
+        setLikeCount((prev) => prev + 1);
+      } else {
+        setLikeCount((prev) => prev - 1);
+      }
     } catch (error) {
       console.error("Error toggling like:", error.response || error);
       toast.error("Failed to toggle like");
+    }
+  }
+  async function handleCommentLike(commentId) {
+    try {
+      
+      const response = await axios.patch(
+        `${backendUrl}/comment/toggle-like/${commentId}`,
+        {},
+        { withCredentials: true }
+      );
+  
+      const { message, data } = response.data;
+      const { isCommentLiked } = data; // Assuming the backend returns updated like status and count
+      setIsCommentLiked(isCommentLiked);
+      if(isCommentLiked){
+        setCommentLikeCount((prev) => prev + 1);
+      }else{
+        setCommentLikeCount((prev) => prev - 1);
+      }
+      // Update the specific comment in the state
+      setPost((prevPost) => {
+        const updatedComments = prevPost.comments.map((comment) => {
+          if (comment._id === commentId) {
+            return {
+              ...comment,
+              isCommentLiked, // Update like status
+            };
+          }
+          return comment;
+        });
+        
+  
+        return { ...prevPost, comments: updatedComments };
+      });
+  
+      toast.success(message);
+    } catch (error) {
+      console.error("Error toggling like on comment:", error.response || error);
+      toast.error("Failed to toggle comment like");
     }
   }
 
@@ -92,22 +137,7 @@ function TweetById() {
           </div>
         </div>
       )}
-      {/* {post && (
-        <Post
-          id={post?._id}
-          content={post?.content}
-          avatar={post?.owner?.avatar}
-          media={post?.media}
-          username={post?.owner?.username}
-          name={post?.owner?.name}
-          timestamp={post?.createdAt}
-          comment={post?.comments}
-          likes={post?.likes}
-          isLiked={isLiked}
-          likeCount={likeCount}
-          handleLike={handleLike}
-        />
-      )} */}
+      
       {post && (
         <div
           key={post?._id}
@@ -122,16 +152,15 @@ function TweetById() {
             <div>
               <div className="flex items-center space-x-2">
                 <span className="font-bold">{post?.owner?.name}</span>
-                <span className="text-gray-500">
-                  @{post?.owner?.username}
-                </span>
+                <span className="text-gray-500">@{post?.owner?.username}</span>
                 <span className="text-gray-500">· {post?.createdAt}</span>
               </div>
               <p className="mt-2 text-white">{post?.content}</p>
 
               {post?.media && (
                 <div className="mt-4">
-                  {post?.media.endsWith(".mp4") || post?.media.endsWith(".webm") ? (
+                  {post?.media.endsWith(".mp4") ||
+                  post?.media.endsWith(".webm") ? (
                     <video
                       src={post?.media}
                       controls
@@ -185,18 +214,72 @@ function TweetById() {
           </div>
         </div>
       )}
-      {post &&
-        post.comments.map((comment) => (
-          <Comments
-            key={comment?._id}
-            avatar={comment?.owner?.avatar}
-            content={comment?.content}
-            username={comment?.owner?.username}
-            name={comment?.owner?.name}
-            timestamp={comment?.createdAt}
-            commentlikes={comment?.likes}
-          />
-        ))}
+      {post && (
+        <div className="mb-64">    
+          {post.comments[0] === null ? (
+            <div className="p-4 text-gray-500 text-xl text-center mb-11">No comments </div>
+          ) : (
+            post.comments.map((comment) => (
+              <div
+                key={Date.now() + Math.random()}
+                className="p-4 mb-4 border-b border-gray-700"
+              >
+                <div className="flex items-start mb-1">
+                  <img
+                    src={comment?.owner?.avatar}
+                    alt="Profile Picture"
+                    className="rounded-full w-12 h-12 mr-2"
+                  />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <div className="font-bold text-white">
+                        {comment?.owner?.name}
+                      </div>
+                      <div className="text-gray-400 text-sm">
+                        @{comment?.owner?.username} ·{" "}
+                        {new Date(comment?.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className="text-white">{comment?.content}</div>
+                  </div>
+                </div>
+                <div className="flex items-center mt-2">
+                  <div className="flex justify-between mt-4 w-full max-w-md">
+                    <div className="flex items-center space-x-1 mr-4 text-gray-500 group">
+                      0
+                      <div className="p-2 rounded-full group-hover:bg-blue-900/40 group-hover:text-blue-500">
+                        <MessageCircle className="h-5 w-5" />
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-1 mr-4 text-gray-500 group">
+                      0
+                      <div className="p-2 rounded-full group-hover:bg-green-900/40 group-hover:text-green-500">
+                        <Repeat className="h-5 w-5" />
+                      </div>
+                    </div>
+                    <div className="flex items-center mr-4 space-x-1 text-gray-500 group cursor-pointer">
+                      {commentLikeCount}
+                      <div onClick={() => handleCommentLike(comment?._id)} className="p-2 rounded-full group-hover:bg-red-900/40">
+                        {isCommentLiked ? (
+                          <FaHeart className="h-5 w-5 text-red-500" />
+                        ) : (
+                          <FaRegHeart className="h-5 w-5" />
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center mr-4 space-x-1 text-gray-500 group">
+                      0
+                      <div className="p-2 rounded-full group-hover:bg-blue-900/40 group-hover:text-blue-500">
+                        <Share className="h-5 w-5" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 }

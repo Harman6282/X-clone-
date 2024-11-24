@@ -6,6 +6,7 @@ import { toast } from "react-hot-toast";
 import Cookies from "js-cookie";
 import { FaRegHeart } from "react-icons/fa";
 import { FaHeart } from "react-icons/fa6";
+import { set } from "mongoose";
 
 function Post({
   id,
@@ -18,22 +19,22 @@ function Post({
   comment,
   likes,
   isLiked,
-  likeCount,
-  handleLike,
+  // likeCount,
+  // handleLike,
 }) {
   const [liked, setLiked] = useState(isLiked);
-  const [count, setCount] = useState(likeCount);
 
-  useEffect(() => {
-    setLiked(isLiked);
-    setCount(likeCount);
-  }, [isLiked, likeCount]);
+  // setLiked(likes.includes(userId));
+  // useEffect(() => {
+  //   setLiked(isLiked);
+  //   setCount(likeCount);
+  // }, [isLiked, likeCount]);
 
-  async function handleLikeToggle() {
-    await handleLike(id);
-    setLiked((prev) => !prev); // Locally toggle like
-    setCount((prev) => (liked ? prev - 1 : prev + 1)); // Update count locally
-  }
+  // async function handleLikeToggle() {
+  //   await handleLike(id);
+  //   setLiked((prev) => !prev); // Locally toggle like
+  //   setCount((prev) => (liked ? prev - 1 : prev + 1)); // Update count locally
+  // }
 
 
   return (
@@ -55,13 +56,13 @@ function Post({
                   src={media}
                   controls
                   muted
-                  className="w-full max-w-xl rounded-lg"
+                  className="w-full rounded-lg"
                 />
               ) : (
                 <img
                   src={media}
                   alt="Media"
-                  className="w-full max-w-xl rounded-lg"
+                  className="w-full  rounded-lg"
                 />
               )}
             </div>
@@ -81,10 +82,10 @@ function Post({
               </div>
             </div>
             <div
-              onClick={() => handleLikeToggle()}
+              // onClick={() => handleLikeToggle()}
               className="flex items-center mr-4 space-x-1 text-gray-500 group cursor-pointer"
             >
-              {count}
+              {likes.length }
               <div className="p-2 rounded-full group-hover:bg-red-900/40">
                 {liked ? (
                   <FaHeart className="h-5 w-5 text-red-500" />
@@ -119,7 +120,7 @@ Post.propTypes = {
   likes: PropTypes.array.isRequired,
   media: PropTypes.string,
   comments: PropTypes.array,
-  handleLike: PropTypes.func.isRequired,
-  isLiked: PropTypes.bool.isRequired,
-  likeCount: PropTypes.number.isRequired,
+  handleLike: PropTypes.func,
+  isLiked: PropTypes.bool,
+  likeCount: PropTypes.number,
 };

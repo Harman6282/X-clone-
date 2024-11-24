@@ -56,7 +56,7 @@ function Sidebar() {
 
 
   return (
-    <div className="hidden sm:flex flex-col h-auto 2xl:w-64 w-20 p-2 text-white border-r border-gray-700 ">
+    <div className=" hidden sm:flex flex-col h-auto 2xl:w-64 w-20 p-2 text-white border-r border-gray-700 ">
       <div className="flex items-center justify-center xl:justify-start p-3 hover:bg-gray-800 rounded-full cursor-pointer">
         <svg viewBox="0 0 24 24" className="h-8 w-8" fill="currentColor">
           <g>

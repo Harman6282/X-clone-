@@ -153,6 +153,7 @@ const getAllTweets = asyncHandler(async (req, res) => {
           $push: {
             _id: "$comments._id",
             content: "$comments.content",
+            likes: "$comments.likes",
             createdAt: "$comments.createdAt",
             owner: {
               _id: "$comments.ownerDetails._id",
@@ -332,7 +333,7 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
       .json(
         new apiResponse(
           200,
-          { likes: tweet.likes, isLiked: !hasLiked },
+          { likes: tweet.likes, isLiked: false },
           "Tweet unliked successfully"
         )
       );
@@ -343,7 +344,7 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
       .json(
         new apiResponse(
           200,
-          { likes: tweet.likes, isLiked: !hasLiked },
+          { likes: tweet.likes, isLiked: true },
           "Tweet liked successfully"
         )
       );
