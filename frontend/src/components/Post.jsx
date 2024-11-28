@@ -40,11 +40,11 @@ function Post({
   return (
     <div className="p-4 border-b border-gray-700 transition duration-200 cursor-pointer">
       <div className="flex space-x-3">
-        <img src={avatar} alt={name} className="h-12 w-12 rounded-full" />
+        <img src={avatar} alt={name} className="h-12 w-12 rounded-full"/>
         <div>
           <div className="flex items-center space-x-2">
             <span className="font-bold">{name}</span>
-            <span className="text-gray-500">@{username}</span>
+            <a className="text-gray-500 ">@{username}</a>
             <span className="text-gray-500">· {timestamp}</span>
           </div>
           <p className="mt-2 text-white">{content}</p>
@@ -68,7 +68,7 @@ function Post({
             </div>
           )}
 
-          <div className="flex justify-between mt-4 w-full max-w-md">
+          <div className="flex justify-between mt-4 w-full max-w-md ">
             <div className="flex items-center space-x-1 mr-4 text-gray-500 group">
               {comment.length}
               <div className="p-2 rounded-full group-hover:bg-blue-900/40 group-hover:text-blue-500">

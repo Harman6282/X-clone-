@@ -18,7 +18,7 @@ const addComment = asyncHandler(async (req, res) => {
     throw new apiError(404, "Tweet not found");
   }
 
-  const createComment = await Comment.create({
+  const comment = await Comment.create({
     content: content,
     tweet: tweetId,
     owner: userId,
@@ -26,7 +26,7 @@ const addComment = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new apiResponse(200, createComment, "Comment added successfully"));
+    .json(new apiResponse(200, comment, "Comment added successfully"));
 });
 
 const editComment = asyncHandler(async (req, res) => {

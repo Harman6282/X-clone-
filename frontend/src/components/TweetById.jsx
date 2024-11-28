@@ -2,18 +2,13 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
-import {
-  ArrowLeft,
-  Crosshair,
-  MessageCircle,
-  Repeat,
-  Share,
-} from "react-feather";
+import { ArrowLeft, MessageCircle, Repeat, Share } from "react-feather";
 import toast from "react-hot-toast";
 import { FaHeart, FaRegHeart, FaWindowClose } from "react-icons/fa";
 import { FaX } from "react-icons/fa6";
 
 function TweetById() {
+  const [commentContent, setCommentContent] = useState("");
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [userId, setUserId] = useState(null);
   const [post, setPost] = useState(null);
@@ -23,6 +18,7 @@ function TweetById() {
   const [likeCount, setLikeCount] = useState(0);
   const [commentLikeCount, setCommentLikeCount] = useState(0);
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
+
   async function fetchCurrUser() {
     try {
       const response = await axios.get(`${backendUrl}/users/current-user`, {
@@ -61,6 +57,8 @@ function TweetById() {
       fetchTweet();
     }
   }, [userId]);
+
+ 
 
   async function handleLike() {
     try {
@@ -125,6 +123,30 @@ function TweetById() {
     }
   }
 
+  async function handleComment(commentContent) {
+    try {
+      const response = await axios.post(
+        `${backendUrl}/comment/add-comment/${tweetId}`,
+        { content: commentContent },
+        { withCredentials: true }
+      );
+
+      const { message, data } = response.data;
+      toast.success(message);
+      // Update the post state to include the new comment
+      // setPost((prevPost) => ({
+      //   ...prevPost,
+      //   comments: [...prevPost.comments, data.comment], 
+      // }));
+
+      setIsCommentsOpen(false);
+      fetchTweet();
+    } catch (error) {
+      console.error("Error posting comment:", error.response || error);
+      toast.error("Failed to post comment");
+    }
+  }
+
   return (
     <div className="flex flex-col">
       {isCommentsOpen && (
@@ -142,13 +164,13 @@ function TweetById() {
                 className="bg-transparent outline-none text-white px-4 py-2  w-full resize-none"
                 type="text"
                 name="comment"
-                
                 rows={3}
                 aria-expanded="false"
                 placeholder="Add a comment"
+                onChange={(e) => setCommentContent(e.target.value)}
+                value={commentContent}
               ></textarea>{" "}
-              
-              <button className="bg-[#1d9bf0] text-white px-4 py-2 rounded-full">
+              <button className="bg-[#1d9bf0] text-white px-4 py-2 rounded-full" onClick={() =>handleComment(commentContent)}>
                 Send
               </button>
             </div>
@@ -179,15 +201,23 @@ function TweetById() {
           className="p-4 border-b border-gray-700 transition duration-200 cursor-pointer"
         >
           <div className="flex space-x-3">
-            <img
-              src={post?.owner?.avatar}
-              alt={name}
-              className="h-12 w-12 rounded-full"
-            />
+            <Link to={`/profile/${post?.owner?._id}`}>
+              <img
+                src={post?.owner?.avatar}
+                alt={name}
+                className="h-12 w-12 rounded-full"
+              />
+            </Link>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-bold">{post?.owner?.name}</span>
-                <span className="text-gray-500">@{post?.owner?.username}</span>
+                <Link to={`/profile/${post?.owner?._id}`}>
+                  <span className="font-bold text-white hover:underline">
+                    {post?.owner?.name}
+                  </span>
+                  <span className="text-gray-500 hover:underline">
+                    @{post?.owner?.username}
+                  </span>
+                </Link>
                 <span className="text-gray-500">· {post?.createdAt}</span>
               </div>
               <p className="mt-2 text-white">{post?.content}</p>
@@ -215,7 +245,10 @@ function TweetById() {
               <div className="flex justify-between mt-4 w-full max-w-md">
                 <div className="flex items-center space-x-1 mr-4 text-gray-500 group">
                   {post?.comments.length}
-                  <div className="p-2 rounded-full group-hover:bg-blue-900/40 group-hover:text-blue-500" onClick={() => setIsCommentsOpen(true)}>
+                  <div
+                    className="p-2 rounded-full group-hover:bg-blue-900/40 group-hover:text-blue-500"
+                    onClick={() => setIsCommentsOpen(true)}
+                  >
                     <MessageCircle className="h-5 w-5" />
                   </div>
                 </div>

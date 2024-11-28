@@ -17,6 +17,7 @@ import { Provider } from 'react-redux';
 import store from './store/store';
 import { Bookmark } from "react-feather";
 import TweetById from "./components/TweetById";
+import UserProfile from "./components/UserProfile";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -26,6 +27,7 @@ const router = createBrowserRouter(
         <Route path="/profile" element={<Profile />} />
         <Route path="/bookmark" element={<Bookmark />} />
         <Route path="/tweet/:tweetId" element={<TweetById />} />
+        <Route path="/profile/:id" element={<UserProfile />} />
       </Route>
       <Route path="/" element={<StandaloneLayout />}>
         <Route path="/signup" element={<AuthUser type={"signup"} />} />

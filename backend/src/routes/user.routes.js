@@ -16,7 +16,7 @@ const router = Router();
 
 router.route("/signup").post(registerUser);
 router.route("/signin").post(signinUser);
-router.route("/u/:id").get(getUserProfile);
+router.route("/profile/:id").get(getUserProfile);
 router.route("/signout").post(verifyUser, logoutUser);
 router.route("/current-user").get(verifyUser, getCurrentUser);
 router.route("/update-User").patch(verifyUser, updateAccoutDetails);

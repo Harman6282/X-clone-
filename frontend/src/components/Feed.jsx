@@ -60,14 +60,13 @@ function Feed() {
         },
         withCredentials: true,
       });
-      console.log(response)
       toast.success(response.data.message);
       getTweets();
       setPostForm({ content: "", media: "" });
     } catch (error) {
       console.log(error.response?.data?.message || "An error occurred");
     }
-    console.log(postForm);
+ 
   }
 
   return (
