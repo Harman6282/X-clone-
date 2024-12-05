@@ -7,7 +7,7 @@ function App() {
   return (
    <div className="flex w-5/6 mx-auto ">
     <Sidebar />
-    <Outlet />
+    <Outlet className="xl:w-[667px]" />
     <Widgets />
 
    </div>

@@ -4,6 +4,7 @@ import Post from "./Post";
 import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
+import toast from "react-hot-toast";
 // import { setLoading, setProfile } from "../store/profileSlice";
 
 function ProfileTabs() {
@@ -18,6 +19,7 @@ function ProfileTabs() {
 
 function Profile() {
   const { id } = useParams();
+  const [isFollowing, setIsFollowing] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const loadingStatus = useSelector((store) => store.profile.loading);
 
@@ -33,8 +35,9 @@ function Profile() {
 
         { withCredentials: true }
       );
-      console.log(response.data.data[0]);
-      setUserProfile(response.data.data[0]);
+      console.log(response.data.data);
+      setUserProfile(response.data.data);
+      setIsFollowing(response.data.data.followers.includes(currProfile._id));
     } catch (error) {
       console.error("Error fetching profile:", error);
       throw error;
@@ -50,6 +53,27 @@ function Profile() {
     }
   }, [id]);
 
+  async function toggleFollow() {
+    try {
+      const response = await axios.patch(
+        `${backendUrl}/f/toggle-follow/${userProfile._id}`,
+        {},
+        { withCredentials: true }
+      );
+
+      console.log(response);
+      const { message } = response.data;
+
+      // Update the user profile state to reflect the follow/unfollow status
+      setIsFollowing(response.data.data.isFollowing);
+
+      toast.success(message);
+    } catch (error) {
+      console.error("Error toggling follow:", error.response || error);
+      toast.error("Failed to toggle follow");
+    }
+  }
+
   return loadingStatus ? (
     <div className="text-white text-center text-3xl">Loading...</div>
   ) : (
@@ -57,7 +81,7 @@ function Profile() {
       {/* Header */}
       <div className="sticky top-0 bg-black bg-opacity-95 z-50 h-16">
         <div className="flex items-center p-2 space-x-4">
-          <button className="rounded-full p-2 hover:bg-gray-800">
+          <button onClick={() => window.history.back()} className="rounded-full p-2 hover:bg-gray-800">
             <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
@@ -94,8 +118,11 @@ function Profile() {
             <p className="text-gray-500">@{userProfile?.username}</p>
           </div>
           <div className="flex justify-end mb-4">
-            <button className="px-4 py-2 border border-gray-700 rounded-full font-bold hover:bg-gray-900">
-              Follow
+            <button
+              onClick={() => toggleFollow()}
+              className="px-4 py-2 border border-gray-700 rounded-full font-bold hover:bg-gray-900"
+            >
+              {isFollowing ? "Unfollow" : "Follow"}
             </button>
           </div>
         </div>

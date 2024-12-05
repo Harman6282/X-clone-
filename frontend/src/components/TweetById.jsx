@@ -1,12 +1,12 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { ArrowLeft, MessageCircle, Repeat, Share } from "react-feather";
 import toast from "react-hot-toast";
-import { FaHeart, FaRegHeart, FaWindowClose } from "react-icons/fa";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { FaX } from "react-icons/fa6";
-
+import { MdDeleteOutline } from "react-icons/md";
 function TweetById() {
   const [commentContent, setCommentContent] = useState("");
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
@@ -18,6 +18,7 @@ function TweetById() {
   const [likeCount, setLikeCount] = useState(0);
   const [commentLikeCount, setCommentLikeCount] = useState(0);
   const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const navigate = useNavigate();
 
   async function fetchCurrUser() {
     try {
@@ -57,8 +58,6 @@ function TweetById() {
       fetchTweet();
     }
   }, [userId]);
-
- 
 
   async function handleLike() {
     try {
@@ -131,19 +130,31 @@ function TweetById() {
         { withCredentials: true }
       );
 
-      const { message, data } = response.data;
+      const { message } = response.data;
       toast.success(message);
-      // Update the post state to include the new comment
-      // setPost((prevPost) => ({
-      //   ...prevPost,
-      //   comments: [...prevPost.comments, data.comment], 
-      // }));
 
       setIsCommentsOpen(false);
       fetchTweet();
     } catch (error) {
       console.error("Error posting comment:", error.response || error);
       toast.error("Failed to post comment");
+    }
+  }
+
+  async function handleDelete(postId) {
+    try {
+      const response = await axios.delete(
+        `${backendUrl}/tweet/delete-tweet/${postId}`,
+        {
+          withCredentials: true,
+        }
+      );
+      const { message } = response.data;
+      toast.success(message);
+      navigate("/");
+    } catch (error) {
+      console.error("Error deleting post:", error.response || error);
+      toast.error("Failed to delete post");
     }
   }
 
@@ -170,7 +181,10 @@ function TweetById() {
                 onChange={(e) => setCommentContent(e.target.value)}
                 value={commentContent}
               ></textarea>{" "}
-              <button className="bg-[#1d9bf0] text-white px-4 py-2 rounded-full" onClick={() =>handleComment(commentContent)}>
+              <button
+                className="bg-[#1d9bf0] text-white px-4 py-2 rounded-full"
+                onClick={() => handleComment(commentContent)}
+              >
                 Send
               </button>
             </div>
@@ -198,7 +212,7 @@ function TweetById() {
       {post && (
         <div
           key={post?._id}
-          className="p-4 border-b border-gray-700 transition duration-200 cursor-pointer"
+          className="p-4 xl:w-[667px] border-b border-gray-700 transition duration-200 cursor-pointer"
         >
           <div className="flex space-x-3">
             <Link to={`/profile/${post?.owner?._id}`}>
@@ -208,7 +222,7 @@ function TweetById() {
                 className="h-12 w-12 rounded-full"
               />
             </Link>
-            <div>
+            <div className="relative">
               <div className="flex items-center space-x-2">
                 <Link to={`/profile/${post?.owner?._id}`}>
                   <span className="font-bold text-white hover:underline">
@@ -219,6 +233,12 @@ function TweetById() {
                   </span>
                 </Link>
                 <span className="text-gray-500">· {post?.createdAt}</span>
+                {post?.owner?._id === userId && (
+                  <MdDeleteOutline
+                    onClick={() => handleDelete(post?._id)}
+                    className="h-5 w-5 text-red-500 hover:text-red-400 right-0 absolute"
+                  />
+                )}
               </div>
               <p className="mt-2 text-white">{post?.content}</p>
 
