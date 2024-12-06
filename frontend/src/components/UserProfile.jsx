@@ -60,19 +60,29 @@ function Profile() {
         {},
         { withCredentials: true }
       );
-
-      console.log(response);
-      const { message } = response.data;
-
-      // Update the user profile state to reflect the follow/unfollow status
-      setIsFollowing(response.data.data.isFollowing);
-
+  
+      const { message, data } = response.data;
+      const { isFollowing: newIsFollowing } = data;
+  
+      // Update the local state
+      setIsFollowing(newIsFollowing);
+  
+      // Increment or decrement the followers count
+      setUserProfile((prevProfile) => ({
+        ...prevProfile,
+        followers: {
+          ...prevProfile.followers,
+          length: prevProfile.followers.length + (newIsFollowing ? 1 : -1),
+        },
+      }));
+  
       toast.success(message);
     } catch (error) {
       console.error("Error toggling follow:", error.response || error);
       toast.error("Failed to toggle follow");
     }
   }
+  
 
   return loadingStatus ? (
     <div className="text-white text-center text-3xl">Loading...</div>
