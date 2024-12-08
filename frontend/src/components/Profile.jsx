@@ -30,17 +30,47 @@ function Profile() {
   const [selectedAvatar, setSelectedAvatar] = useState(null);
   const [selectedCoverImage, setSelectedCoverImage] = useState(null);
 
-  async function handleImageUpdate(type) {
+  async function handleImageUpdate() {
     try {
-      if (type === "avatar") {
+      let updated = false;
+
+      if (selectedAvatar) {
+        const avatarFormData = new FormData();
+        avatarFormData.append("avatar", selectedAvatar);
+
+        await axios.patch(`${backendUrl}/users/update-avatar`, avatarFormData, {
+          withCredentials: true,
+        });
+
         setSelectedAvatar(null);
         setAvatarPreview(null);
-      } else {
+        updated = true;
+        console.log("Avatar updated successfully");
+      }
+
+      if (selectedCoverImage) {
+        const coverImageFormData = new FormData();
+        coverImageFormData.append("coverImage", selectedCoverImage);
+
+        await axios.patch(
+          `${backendUrl}/users/update-coverImage`,
+          coverImageFormData,
+          {
+            withCredentials: true,
+          }
+        );
+
         setSelectedCoverImage(null);
         setCoverImagePreview(null);
+        updated = true;
+        console.log("Cover image updated successfully");
+      }
+
+      if (updated) {
+        getCurrProfile(); // Refresh user profile
       }
     } catch (error) {
-      console.error(`Error updating ${type}:`, error);
+      console.error("Error updating images:", error);
     }
   }
 
@@ -177,11 +207,12 @@ function Profile() {
       {/* Profile Header */}
       <div className="relative">
         {/* Cover Image */}
-        <div className="h-48 bg-gray-800 relative">
+        <div className="h-48 bg-gray-800 relative group">
           <img
-            className="h-48 w-full object-cover cursor-pointer"
+            className="h-48 w-full object-cover cursor-pointer "
             src={coverImagePreview || userProfile?.coverImage || null}
             onClick={() => document.getElementById("coverImageInput").click()}
+            alt="Cover"
           />
           <input
             type="file"
@@ -190,14 +221,33 @@ function Profile() {
             accept="image/*"
             onChange={(e) => handleImageSelect(e, "coverImage")}
           />
+          <div
+            className="absolute bottom-2 right-2 bg-blue-900 bg-opacity-100 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+            onClick={() => document.getElementById("coverImageInput").click()}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="w-5 h-5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L7.5 21H3v-4.5L16.732 3.732z"
+              />
+            </svg>
+          </div>
         </div>
 
         {/* Avatar */}
-        <div className="absolute -bottom-16 left-4">
+        <div className="absolute -bottom-16 left-4 group">
           <img
             src={avatarPreview || userProfile?.avatar}
             alt="Avatar"
-            className="h-32 w-32 rounded-full border-4 border-black cursor-pointer"
+            className="h-32 w-32 rounded-full border-4 border-black cursor-pointer object-cover"
             onClick={() => document.getElementById("avatarInput").click()}
           />
           <input
@@ -207,41 +257,52 @@ function Profile() {
             accept="image/*"
             onChange={(e) => handleImageSelect(e, "avatar")}
           />
+          <div
+            className="absolute bottom-2 right-3 bg-blue-900 bg-opacity-100 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer"
+            onClick={() => document.getElementById("avatarInput").click()}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+              className="w-3 h-3"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L7.5 21H3v-4.5L16.732 3.732z"
+              />
+            </svg>
+          </div>
         </div>
       </div>
 
       {/* Profile Info */}
       <div className="mt-20 px-4">
-        <div className="flex justify-end mb-4 space-x-2">
-          <button
-            onClick={() => setIsEditOpen(true)}
-            className="px-4 py-2 border border-gray-700 rounded-full font-bold hover:bg-gray-900"
-          >
-            Edit profile
-          </button>
-          {selectedAvatar && (
+        <div className="flex items-center justify-between">
+          <div className="mb-4 ">
+            <h2 className="text-xl font-bold">{userProfile?.name}</h2>
+            <p className="text-gray-500">@{userProfile?.username}</p>
+          </div>
+          <div className="flex justify-end mb-4 space-x-2">
             <button
-              onClick={() => handleImageUpdate("avatar")}
+              onClick={() => setIsEditOpen(true)}
               className="px-4 py-2 border border-gray-700 rounded-full font-bold hover:bg-gray-900"
             >
-              Update Avatar
+              Edit profile
             </button>
-          )}
-          {selectedCoverImage && (
-            <button
-              onClick={() => handleImageUpdate("coverImage")}
-              className="px-4 py-2 border border-gray-700 rounded-full font-bold hover:bg-gray-900"
-            >
-              Update Cover
-            </button>
-          )}
+            {(selectedAvatar || selectedCoverImage) && (
+              <button
+                onClick={handleImageUpdate}
+                className="px-4 py-2 border border-gray-700 rounded-full font-bold hover:bg-gray-900"
+              >
+                Update Images
+              </button>
+            )}
+          </div>
         </div>
-
-        <div className="mb-4">
-          <h2 className="text-xl font-bold">{userProfile?.name}</h2>
-          <p className="text-gray-500">@{userProfile?.username}</p>
-        </div>
-
         <p className="mb-4">{userProfile?.bio}</p>
 
         <div className="flex flex-wrap gap-y-2 text-gray-500 mb-4">
